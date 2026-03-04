@@ -17,6 +17,9 @@ const App = () => {
       .then(initialPersons => {
         setPersons(initialPersons)
       })
+      .catch(error => {
+        showMessage('Failed to fetch data from server', 'error')
+      })
   }, [])
 
   const showMessage = (text, type = 'success') => {
@@ -38,7 +41,7 @@ const App = () => {
       number: newNumber
     }
 
-    // UPDATE EXISTING
+    // 🔁 UPDATE EXISTING PERSON
     if (existingPerson) {
       const confirmUpdate = window.confirm(
         `${newName} is already added. Replace old number?`
@@ -57,17 +60,18 @@ const App = () => {
             setNewNumber('')
           })
           .catch(error => {
-            showMessage(
-              `Information of ${existingPerson.name} has already been removed from server`,
-              'error'
-            )
+            const errorMessage =
+              error.response?.data?.error ||
+              `Information of ${existingPerson.name} has already been removed from server`
+
+            showMessage(errorMessage, 'error')
 
             setPersons(persons.filter(p => p.id !== existingPerson.id))
           })
       }
 
     } else {
-      // CREATE NEW
+      // ➕ CREATE NEW PERSON
       personService
         .create(personObject)
         .then(returnedPerson => {
@@ -78,7 +82,10 @@ const App = () => {
           setNewNumber('')
         })
         .catch(error => {
-          showMessage('Failed to add person', 'error')
+          const errorMessage =
+            error.response?.data?.error || 'Failed to add person'
+
+          showMessage(errorMessage, 'error')
         })
     }
   }
@@ -98,10 +105,11 @@ const App = () => {
           showMessage(`Deleted ${person.name}`)
         })
         .catch(error => {
-          showMessage(
-            `Information of ${person.name} was already removed`,
-            'error'
-          )
+          const errorMessage =
+            error.response?.data?.error ||
+            `Information of ${person.name} was already removed from server`
+
+          showMessage(errorMessage, 'error')
 
           setPersons(persons.filter(p => p.id !== id))
         })
